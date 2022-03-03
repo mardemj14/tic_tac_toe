@@ -12,6 +12,9 @@ const GameBoard = (() => {
 
   let activePlayer = playerX;
   let roundWin = false;
+  let roundDraw = false;
+  let round = 1;
+  const maxRounds = 5;
 
   const squares = Array.from(document.querySelectorAll('.square'));
   const winConditions = [
@@ -41,12 +44,30 @@ const GameBoard = (() => {
         squares[f].textContent !== ''
       ) {
         roundWin = true;
-        console.log(`${activePlayer.sign} Won!`);
+        console.log(`${activePlayer.sign} wins round ${round}/${maxRounds}`);
+        round++;
+
+        // add reset round logic
       }
     });
   };
 
-  return { squares, switchPlayer, activePlayer, checkWin };
+  const checkDraw = () => {
+    // vacant is recognize as '' (an empty string)
+    let vacantSquares = 9;
+
+    squares.forEach((square) => {
+      if (square.textContent !== '') vacantSquares--;
+    });
+
+    if (!roundWin && vacantSquares <= 0) {
+      roundDraw = true;
+      console.log('Round draw');
+      round++;
+    }
+  };
+
+  return { squares, switchPlayer, activePlayer, checkWin, checkDraw };
 })();
 
 const DisplayController = (() => {
@@ -60,6 +81,7 @@ const DisplayController = (() => {
 
         // check for round win / draw
         GameBoard.checkWin();
+        GameBoard.checkDraw();
 
         // switch active player after each turn
         player = GameBoard.switchPlayer();
