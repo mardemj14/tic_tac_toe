@@ -1,9 +1,14 @@
 'use strict';
+const roundEl = document.getElementById('round');
+const maxRoundEl = document.getElementById('max-round');
+let scoreXEl = document.querySelector('.score-x');
+let scoreOEl = document.querySelector('.score-o');
 
 const Player = (sign) => {
   this.sign = sign;
+  this.score = 0;
 
-  return { sign };
+  return { sign, score };
 };
 
 const GameBoard = (() => {
@@ -28,6 +33,10 @@ const GameBoard = (() => {
     [2, 4, 6],
   ];
 
+  const getRound = () => {
+    return round;
+  };
+
   const switchPlayer = () => {
     activePlayer = activePlayer === playerX ? playerO : playerX;
     return activePlayer;
@@ -44,7 +53,8 @@ const GameBoard = (() => {
         squares[f].textContent !== ''
       ) {
         roundWin = true;
-        console.log(`${activePlayer.sign} wins round ${round}/${maxRounds}`);
+        activePlayer.score++;
+        console.log(`${activePlayer.sign} won round ${round}/${maxRounds}`);
         round++;
 
         // add reset round logic
@@ -67,7 +77,7 @@ const GameBoard = (() => {
     }
   };
 
-  return { squares, switchPlayer, activePlayer, checkWin, checkDraw };
+  return { squares, switchPlayer, activePlayer, checkWin, checkDraw, getRound };
 })();
 
 const DisplayController = (() => {
@@ -82,6 +92,13 @@ const DisplayController = (() => {
         // check for round win / draw
         GameBoard.checkWin();
         GameBoard.checkDraw();
+
+        // update current round
+        roundEl.textContent = GameBoard.getRound();
+
+        // update player score
+        if (player.sign === 'X') scoreXEl.textContent = `Score ${player.score}`;
+        else scoreOEl.textContent = `Score ${player.score}`;
 
         // switch active player after each turn
         player = GameBoard.switchPlayer();
