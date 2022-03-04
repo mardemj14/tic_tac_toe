@@ -1,6 +1,8 @@
 'use strict';
 const roundEl = document.getElementById('round');
 const maxRoundEl = document.getElementById('max-round');
+const playerXEl = document.querySelector('.player-x');
+const playerOEl = document.querySelector('.player-o');
 let scoreXEl = document.querySelector('.score-x');
 let scoreOEl = document.querySelector('.score-o');
 
@@ -39,6 +41,16 @@ const GameBoard = (() => {
 
   const switchPlayer = () => {
     activePlayer = activePlayer === playerX ? playerO : playerX;
+
+    if (activePlayer === playerX) {
+      playerXEl.classList.add('active-player');
+      playerOEl.classList.remove('active-player');
+    }
+
+    if (activePlayer === playerO) {
+      playerOEl.classList.add('active-player');
+      playerXEl.classList.remove('active-player');
+    }
     return activePlayer;
   };
 
@@ -54,10 +66,19 @@ const GameBoard = (() => {
       ) {
         roundWin = true;
         activePlayer.score++;
-        console.log(`${activePlayer.sign} won round ${round}/${maxRounds}`);
         round++;
 
-        // add reset round logic
+        squares[f].classList.add('win-anim');
+        squares[s].classList.add('win-anim');
+        squares[t].classList.add('win-anim');
+
+        // reset round after 2 seconds
+        setTimeout(() => {
+          squares[f].classList.remove('win-anim');
+          squares[s].classList.remove('win-anim');
+          squares[t].classList.remove('win-anim');
+          reset();
+        }, 2000);
       }
     });
   };
@@ -72,12 +93,28 @@ const GameBoard = (() => {
 
     if (!roundWin && vacantSquares <= 0) {
       roundDraw = true;
-      console.log('Round draw');
       round++;
+
+      reset();
     }
   };
 
-  return { squares, switchPlayer, activePlayer, checkWin, checkDraw, getRound };
+  const reset = () => {
+    squares.forEach((square) => {
+      square.textContent = '';
+    });
+  };
+
+  const gameOver = () => {
+    if (round > maxRounds) {
+      scoreOEl.textContent = 'Score 0';
+      scoreXEl.textContent = 'Score 0';
+      round = 0;
+      reset();
+    }
+  };
+
+  return { squares, switchPlayer, activePlayer, checkWin, checkDraw, getRound, gameOver };
 })();
 
 const DisplayController = (() => {
@@ -87,14 +124,11 @@ const DisplayController = (() => {
         // check if square is vacant before updating
         if (square.textContent === '') {
           square.textContent = player.sign;
-        } else console.log('Square is occupied');
+        }
 
         // check for round win / draw
         GameBoard.checkWin();
         GameBoard.checkDraw();
-
-        // update current round
-        roundEl.textContent = GameBoard.getRound();
 
         // update player score
         if (player.sign === 'X') scoreXEl.textContent = `Score ${player.score}`;
@@ -102,6 +136,11 @@ const DisplayController = (() => {
 
         // switch active player after each turn
         player = GameBoard.switchPlayer();
+
+        GameBoard.gameOver();
+
+        // update current round
+        roundEl.textContent = GameBoard.getRound();
       });
     });
   };
