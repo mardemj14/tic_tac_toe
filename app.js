@@ -24,6 +24,7 @@ const GameBoard = (() => {
   const maxRounds = 5;
 
   const squares = Array.from(document.querySelectorAll('.square'));
+
   const winConditions = [
     [0, 1, 2],
     [3, 4, 5],
@@ -68,12 +69,14 @@ const GameBoard = (() => {
         activePlayer.score++;
         round++;
 
+        // add anim to winning squares
         squares[f].classList.add('win-anim');
         squares[s].classList.add('win-anim');
         squares[t].classList.add('win-anim');
 
         // reset round after 2 seconds
         setTimeout(() => {
+          // remove anim from winning squares
           squares[f].classList.remove('win-anim');
           squares[s].classList.remove('win-anim');
           squares[t].classList.remove('win-anim');
@@ -87,6 +90,7 @@ const GameBoard = (() => {
     // vacant is recognize as '' (an empty string)
     let vacantSquares = 9;
 
+    // keep track of empty squares
     squares.forEach((square) => {
       if (square.textContent !== '') vacantSquares--;
     });
@@ -99,6 +103,7 @@ const GameBoard = (() => {
     }
   };
 
+  // reset squares after each round
   const reset = () => {
     squares.forEach((square) => {
       square.textContent = '';
@@ -106,11 +111,18 @@ const GameBoard = (() => {
   };
 
   const gameOver = () => {
-    if (round > maxRounds) {
-      scoreOEl.textContent = 'Score 0';
-      scoreXEl.textContent = 'Score 0';
-      round = 0;
-      reset();
+    if (round >= maxRounds) {
+      playerO.score = 0;
+      playerX.score = 0;
+
+      round = 1;
+
+      setTimeout(() => {
+        scoreOEl.textContent = 'Score 0';
+        scoreXEl.textContent = 'Score 0';
+        roundEl.textContent = round;
+        reset();
+      }, 2000);
     }
   };
 
@@ -137,10 +149,11 @@ const DisplayController = (() => {
         // switch active player after each turn
         player = GameBoard.switchPlayer();
 
-        GameBoard.gameOver();
-
         // update current round
         roundEl.textContent = GameBoard.getRound();
+
+        // logic to check if the game is over
+        GameBoard.gameOver();
       });
     });
   };
